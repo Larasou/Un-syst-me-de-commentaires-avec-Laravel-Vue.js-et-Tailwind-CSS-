@@ -15,6 +15,13 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::group([], function () {
+    Route::get('home/comments', 'CommentController@index');
+    Route::post('home/comments', 'CommentController@store');
+    Route::put('home/{comment}', 'CommentController@update');
+    Route::delete('home/{comment}', 'CommentController@destroy');
+});
+
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');

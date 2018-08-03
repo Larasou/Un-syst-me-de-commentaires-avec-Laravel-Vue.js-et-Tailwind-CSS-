@@ -1,4 +1,4 @@
-@import url(https://fonts.googleapis.com/css?family=Raleway:300,400,600);/*!
+@import url(https://fonts.googleapis.com/css?family=Raleway:300,400,600);@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800);/*!
  * Bootstrap v4.1.2 (https://getbootstrap.com/)
  * Copyright 2011-2018 The Bootstrap Authors
  * Copyright 2011-2018 Twitter, Inc.
@@ -13589,6 +13589,10 @@ table {
   font-family: Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
 }
 
+.font-open-sans {
+  font-family: Open Sans, sans-serif;
+}
+
 .font-hairline {
   font-weight: 100;
 }
@@ -19258,6 +19262,10 @@ table {
     font-family: Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
   }
 
+  .sm\:font-open-sans {
+    font-family: Open Sans, sans-serif;
+  }
+
   .sm\:font-hairline {
     font-weight: 100;
   }
@@ -24910,6 +24918,10 @@ table {
 
   .md\:font-mono {
     font-family: Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+  }
+
+  .md\:font-open-sans {
+    font-family: Open Sans, sans-serif;
   }
 
   .md\:font-hairline {
@@ -30566,6 +30578,10 @@ table {
     font-family: Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
   }
 
+  .lg\:font-open-sans {
+    font-family: Open Sans, sans-serif;
+  }
+
   .lg\:font-hairline {
     font-weight: 100;
   }
@@ -36218,6 +36234,10 @@ table {
 
   .xl\:font-mono {
     font-family: Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+  }
+
+  .xl\:font-open-sans {
+    font-family: Open Sans, sans-serif;
   }
 
   .xl\:font-hairline {

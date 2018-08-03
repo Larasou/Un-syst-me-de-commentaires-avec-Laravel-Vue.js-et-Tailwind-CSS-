@@ -226,7 +226,11 @@ module.exports = {
       'Liberation Mono',
       'Courier New',
       'monospace',
-    ]
+    ],
+      'open-sans': [
+          'Open Sans',
+          'sans-serif',
+      ]
   },
 
 

@@ -32,7 +32,9 @@ window.Vue = require('vue');
 
 Vue.prototype.csrfToken = window.App.csrfToken;
 Vue.prototype.user = window.App.user;
+Vue.prototype.admin = window.App.admin;
 Vue.prototype.signedIn = window.App.signedIn;
+
 /**
  * Next we will register the CSRF Token as a common header with Axios so that
  * all outgoing HTTP requests automatically have it attached. This is just

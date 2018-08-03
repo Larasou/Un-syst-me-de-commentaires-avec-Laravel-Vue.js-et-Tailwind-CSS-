@@ -14351,7 +14351,9 @@ window.Vue = __webpack_require__(39);
 
 Vue.prototype.csrfToken = window.App.csrfToken;
 Vue.prototype.user = window.App.user;
+Vue.prototype.admin = window.App.admin;
 Vue.prototype.signedIn = window.App.signedIn;
+
 /**
  * Next we will register the CSRF Token as a common header with Axios so that
  * all outgoing HTTP requests automatically have it attached. This is just
@@ -47747,6 +47749,17 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -47754,40 +47767,31 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     name: "Comments",
     data: function data() {
         return {
-            comments: [{
-                id: 1,
-                body: "Hey! Je m'appelle Soulouf et toi ?",
-                edited: false,
-                created_at: new Date().toLocaleString(),
-                user: {
-                    id: 1,
-                    name: 'Soulouf'
-                }
-            }, {
-                id: 2,
-                body: "C'est moi ou il fait très chaud ce temps ci ?",
-                edited: false,
-                created_at: new Date().toLocaleString(),
-                user: {
-                    id: 2,
-                    name: 'Jean'
-                }
-            }, {
-                id: 3,
-                body: "Ha oui il fait super chaud!",
-                edited: false,
-                created_at: new Date().toLocaleString(),
-                user: {
-                    id: 1,
-                    name: 'Soulouf'
-                }
-            }],
+            state: 'default',
+            comments: {},
             body: null
         };
+    },
+    created: function created() {
+        this.fetch();
     },
 
     components: { Comment: __WEBPACK_IMPORTED_MODULE_0__Comment___default.a },
     methods: {
+        fetch: function fetch() {
+            var _this = this;
+
+            axios.get(location.pathname + '/comments').then(function (response) {
+                _this.comments = response.data;
+            });
+        },
+        startEditing: function startEditing() {
+            this.state = 'editing';
+        },
+        stopEditing: function stopEditing() {
+            this.state = 'default';
+            this.body = null;
+        },
         updated: function updated($event) {
             var index = this.comments.findIndex(function (element) {
                 return element.id === $event.id;
@@ -47803,20 +47807,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             this.comments.splice(index, 1);
         },
         submit: function submit() {
-            var newComment = {
-                id: this.comments[this.comments.length - 1].id + 1,
-                body: this.body,
-                edited: false,
-                created_at: new Date().toLocaleString(),
-                user: {
-                    id: this.user.id,
-                    name: this.user.name
-                }
-            };
+            var _this2 = this;
 
-            this.comments.push(newComment);
-
-            this.body = null;
+            axios.post(location.pathname + '/comments', this.$data).then(function (response) {
+                _this2.comments.unshift(response.data);
+                _this2.stopEditing();
+            });
         }
     }
 });
@@ -47951,6 +47947,16 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     name: "Comment",
@@ -47967,21 +47973,28 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             return this.user.id === this.comment.user.id;
         }
     },
+
     methods: {
         resetForm: function resetForm() {
             this.state = 'default';
             this.body = this.comment.body;
         },
         submit: function submit() {
-            this.state = 'default';
-            this.$emit('updating', {
-                'id': this.comment.id,
-                'body': this.body
+            var _this = this;
+
+            axios.put(location.pathname + '/' + this.comment.id, this.$data).then(function (response) {
+                _this.$emit('updating', response.data);
+
+                _this.state = 'default';
             });
         },
         destroy: function destroy() {
-            this.$emit('deleting', {
-                'id': this.comment.id
+            var _this2 = this;
+
+            axios.delete(location.pathname + '/' + this.comment.id).then(function () {
+                _this2.$emit('deleting', {
+                    id: _this2.comment.id
+                });
             });
         }
     }
@@ -47996,51 +48009,81 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c("div", [
-      _vm.state === "default"
-        ? _c("div", [
-            _c("div", { domProps: { textContent: _vm._s(_vm.body) } }),
-            _vm._v(" "),
-            _c("div", { staticClass: "text-secondary text-xs ml-3" }, [
-              _c("span", {
-                domProps: { textContent: _vm._s(_vm.comment.user.name) }
-              }),
-              _vm._v(" -\n               "),
-              _c("span", {
-                domProps: { textContent: _vm._s(_vm.comment.created_at) }
-              }),
-              _vm._v(" "),
-              _vm.editable
-                ? _c(
-                    "button",
-                    {
-                      staticClass: "text-green font-bold no-underline",
-                      on: {
-                        click: function($event) {
-                          _vm.state = "editing"
-                        }
+    _c("div", { staticClass: "flex flex-col md:flex-row" }, [
+      _c(
+        "div",
+        { staticClass: "flex flex-col items-center  mb-3 md:mb-0 md:mr-5" },
+        [
+          _c("img", {
+            attrs: {
+              src: _vm.comment.user.avatar,
+              width: "75",
+              height: "75",
+              alt: _vm.comment.user.name
+            }
+          }),
+          _vm._v(" "),
+          _vm.editable || _vm.admin
+            ? _c("div", { staticClass: "flex mt-3 justify-between" }, [
+                _c(
+                  "a",
+                  {
+                    staticClass:
+                      "no-underline mb-auto text-blue hover:text-blue-dark text-lg",
+                    attrs: { href: "javascript:void(0)" },
+                    on: {
+                      click: function($event) {
+                        _vm.state = "editing"
                       }
-                    },
-                    [_vm._v("\n                   Editer\n               ")]
-                  )
-                : _vm._e(),
+                    }
+                  },
+                  [_c("i", { staticClass: "fas fa-edit" })]
+                ),
+                _vm._v(" "),
+                _c(
+                  "a",
+                  {
+                    staticClass:
+                      "no-underline ml-3 mb-auto text-red-light hover:text-red text-lg",
+                    attrs: { href: "javascript:void(0)" },
+                    on: { click: _vm.destroy }
+                  },
+                  [_c("i", { staticClass: "fas fa-trash" })]
+                )
+              ])
+            : _vm._e()
+        ]
+      ),
+      _vm._v(" "),
+      _vm.state === "default"
+        ? _c(
+            "div",
+            { staticClass: "flex flex-col mt-0 w-full justify-between" },
+            [
+              _c("div", { staticClass: "flex flex-col justify-between mb-1" }, [
+                _c("p", {
+                  staticClass: " text-grey-darkest leading-normal text-lg",
+                  domProps: { innerHTML: _vm._s(_vm.body) }
+                })
+              ]),
               _vm._v(" "),
-              _vm.editable
-                ? _c(
-                    "button",
-                    {
-                      staticClass: "text-red font-bold no-underline",
-                      on: { click: _vm.destroy }
-                    },
-                    [_vm._v("\n                   Supprimer\n               ")]
-                  )
-                : _vm._e()
-            ])
-          ])
+              _c(
+                "div",
+                { staticClass: "ml-1 text-grey-dark leading-normal text-sm" },
+                [
+                  _c("p", [
+                    _vm._v(_vm._s(_vm.comment.user.name) + " "),
+                    _c("span", { staticClass: "mx-1 text-xs" }, [_vm._v("•")]),
+                    _vm._v(" " + _vm._s(_vm.comment.created_at))
+                  ])
+                ]
+              )
+            ]
+          )
         : _vm._e(),
       _vm._v(" "),
       _vm.state === "editing"
-        ? _c("div", [
+        ? _c("div", { staticClass: "w-full" }, [
             _c(
               "form",
               {
@@ -48053,39 +48096,80 @@ var render = function() {
                 }
               },
               [
-                _c("textarea", {
-                  directives: [
-                    {
-                      name: "model",
-                      rawName: "v-model",
-                      value: _vm.body,
-                      expression: "body"
-                    }
-                  ],
-                  staticClass: "border",
-                  attrs: { name: "body", placeholder: "Mon commntaire..." },
-                  domProps: { value: _vm.body },
-                  on: {
-                    input: function($event) {
-                      if ($event.target.composing) {
-                        return
+                _c(
+                  "textarea",
+                  {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.body,
+                        expression: "body"
                       }
-                      _vm.body = $event.target.value
+                    ],
+                    staticClass:
+                      "h-24 bg-grey-lighter rounded leading-normal resize-none w-full py-2 px-3",
+                    attrs: {
+                      name: "body",
+                      placeholder: "Editer mon commntaire..."
+                    },
+                    domProps: { value: _vm.body },
+                    on: {
+                      input: function($event) {
+                        if ($event.target.composing) {
+                          return
+                        }
+                        _vm.body = $event.target.value
+                      }
                     }
-                  }
-                }),
+                  },
+                  [_vm._v("               >")]
+                ),
                 _vm._v(" "),
-                _c("div", [
-                  _c("button", { attrs: { type: "submit" } }, [
-                    _vm._v("Enregistrer")
-                  ]),
-                  _vm._v(" "),
-                  _c(
-                    "button",
-                    { attrs: { type: "button" }, on: { click: _vm.resetForm } },
-                    [_vm._v("Annuler")]
-                  )
-                ])
+                _c(
+                  "div",
+                  {
+                    directives: [
+                      {
+                        name: "show",
+                        rawName: "v-show",
+                        value: _vm.state === "editing",
+                        expression: "state === 'editing'"
+                      }
+                    ],
+                    staticClass: "mt-3 flex justify-end"
+                  },
+                  [
+                    _c(
+                      "button",
+                      {
+                        staticClass:
+                          "border border-green bg-blue text-white hover:bg-blue-dark py-2 px-4 rounded tracking-wide mr-1",
+                        attrs: { type: "submit" }
+                      },
+                      [
+                        _vm._v(
+                          "\n                       Enregistrer\n                   "
+                        )
+                      ]
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "button",
+                      {
+                        staticClass:
+                          "border border-red-dark text-red-dark hover:bg-red hover:text-white py-2 px-4 rounded tracking-wide ml-1",
+                        attrs: { type: "button" },
+                        on: { click: _vm.resetForm }
+                      },
+                      [
+                        _vm._v(
+                          "\n                       Annuler\n                   "
+                        )
+                      ]
+                    )
+                  ]
+                )
               ]
             )
           ])
@@ -48113,8 +48197,11 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c(
     "div",
+    { staticClass: "bg-grey-lightest font-open-sans max-w-3xl mx-auto" },
     [
-      _c("div", [
+      _c("div", { staticClass: "bg-white rounded shadow-sm p-8 mb-4" }, [
+        _vm._m(0),
+        _vm._v(" "),
         _c(
           "form",
           {
@@ -48127,39 +48214,89 @@ var render = function() {
             }
           },
           [
-            _c("textarea", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.body,
-                  expression: "body"
-                }
-              ],
-              staticClass: "border",
-              attrs: { name: "body", placeholder: "Mon commntaire..." },
-              domProps: { value: _vm.body },
-              on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
+            _c(
+              "textarea",
+              {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.body,
+                    expression: "body"
                   }
-                  _vm.body = $event.target.value
+                ],
+                staticClass:
+                  "bg-grey-lighter rounded leading-normal resize-none w-full py-2 px-3",
+                class: [_vm.state === "editing" ? "h-24" : "h-10"],
+                attrs: {
+                  name: "body",
+                  placeholder: "Ajouter un commntaire..."
+                },
+                domProps: { value: _vm.body },
+                on: {
+                  focus: _vm.startEditing,
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.body = $event.target.value
+                  }
                 }
-              }
-            }),
+              },
+              [_vm._v("               >")]
+            ),
             _vm._v(" "),
-            _vm._m(0)
+            _c(
+              "div",
+              {
+                directives: [
+                  {
+                    name: "show",
+                    rawName: "v-show",
+                    value: _vm.state === "editing",
+                    expression: "state === 'editing'"
+                  }
+                ],
+                staticClass: "mt-3 flex justify-end"
+              },
+              [
+                _c(
+                  "button",
+                  {
+                    staticClass:
+                      "border border-green bg-green text-white hover:bg-green-dark py-2 px-4 rounded tracking-wide mr-1",
+                    attrs: { type: "submit" }
+                  },
+                  [
+                    _vm._v(
+                      "\n                    Enregistrer\n                "
+                    )
+                  ]
+                ),
+                _vm._v(" "),
+                _c(
+                  "button",
+                  {
+                    staticClass:
+                      "border border-orange-dark text-orange-dark hover:bg-orange hover:text-white py-2 px-4 rounded tracking-wide ml-1",
+                    attrs: { type: "button" },
+                    on: { click: _vm.stopEditing }
+                  },
+                  [_vm._v("\n                    Annuler\n                ")]
+                )
+              ]
+            )
           ]
         )
       ]),
       _vm._v(" "),
-      _vm._l(_vm.comments, function(comment) {
+      _vm._l(_vm.comments, function(comment, index) {
         return _c(
           "div",
           { key: comment.id },
           [
             _c("comment", {
+              class: [index === _vm.comments.length - 1 ? "" : "mb-6"],
               attrs: { comment: comment },
               on: { updating: _vm.updated, deleting: _vm.deleted }
             })
@@ -48176,10 +48313,8 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", [
-      _c("button", { attrs: { type: "submit" } }, [_vm._v("Enregistrer")]),
-      _vm._v(" "),
-      _c("button", { attrs: { type: "reset" } }, [_vm._v("Annuler")])
+    return _c("div", { staticClass: "mb-4" }, [
+      _c("h3", { staticClass: "text-black" }, [_vm._v("Commentaires")])
     ])
   }
 ]
